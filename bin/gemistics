@@ -1,0 +1,39 @@
+#!/usr/bin/env ruby -U
+
+require "./lib/gemistics"
+
+def total(items)
+  items.size
+end
+
+def percent(subset, set)
+  ((total(subset) / total(set).to_f) * 100).round(2)
+end
+
+gems = Gemistics.new.gems
+puts "Total gems: #{total(gems)}"
+
+semvers = gems.select { |gem| gem.version.is_semver? }
+puts "Versions that match SEMVER: #{total(semvers)} (#{percent(semvers, gems)}%)"
+
+releases = semvers.select { |gem| gem.version.is_release? }
+puts "\t- Greater than 1.X.Y: #{total(releases)} (#{percent(releases, semvers)}%)"
+
+minors = semvers.select { |gem| gem.version.is_minor? }
+minors_ten_down = minors.select { |gem| gem.downloads >= 10_000 }
+minors_hund_down = minors.select { |gem| gem.downloads >= 100_000 }
+minors_mil_down = minors.select { |gem| gem.downloads >= 1_000_000 }
+puts "\t- Greater than 0.1.Y: #{total(minors)} (#{percent(minors, semvers)}%)"
+puts "\t\t- with +10k downloads: #{total(minors_ten_down)} (#{percent(minors_ten_down, minors)}%)"
+puts "\t\t- with +100k downloads: #{total(minors_hund_down)} (#{percent(minors_hund_down, minors)}%)"
+puts "\t\t- with +1m downloads: #{total(minors_mil_down)} (#{percent(minors_mil_down, minors)}%)"
+
+patches = semvers.select { |gem| gem.version.is_patch? }
+patches_ten_down = patches.select { |gem| gem.downloads >= 10_000 }
+patches_hund_down = patches.select { |gem| gem.downloads >= 100_000 }
+patches_mil_down = patches.select { |gem| gem.downloads >= 1_000_000 }
+puts "\t- Greater than 0.0.1: #{total(patches)} (#{percent(patches, semvers)}%)"
+puts "\t\t- with +10k downloads: #{total(patches_ten_down)} (#{percent(patches_ten_down, patches)}%)"
+puts "\t\t- with +100k downloads: #{total(patches_hund_down)} (#{percent(patches_hund_down, patches)}%)"
+puts "\t\t- with +1m downloads: #{total(patches_mil_down)} (#{percent(patches_mil_down, patches)}%)"
+binding.pry
